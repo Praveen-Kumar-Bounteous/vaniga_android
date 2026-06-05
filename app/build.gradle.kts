@@ -92,4 +92,8 @@ dependencies {
 
     //Google fonts
     implementation("androidx.compose.ui:ui-text-google-fonts:1.7.6")
+
+    //paging 3 library
+    implementation(libs.androidx.paging.runtime)
+    implementation(libs.androidx.paging.compose)
 }

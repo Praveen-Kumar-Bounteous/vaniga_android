@@ -2,7 +2,6 @@ package com.example.vaniga.presentation.product_list
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
@@ -13,12 +12,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.paging.LoadState
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.vaniga.presentation.Screen
 import com.example.vaniga.presentation.components.shimmerEffect
+import com.example.vaniga.presentation.product_list.ProductListItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,7 +27,8 @@ fun ProductListScreen(
     navController: NavController,
     viewModel: ProductListViewModel = hiltViewModel()
 ) {
-    val state = viewModel.state.value
+
+    val products = viewModel.productsFlow.collectAsLazyPagingItems()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -50,13 +52,14 @@ fun ProductListScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // 1. DATA LIST
+
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(vertical = 8.dp)
             ) {
-                if (state.isLoading) {
-                    items(8) {
+
+                if (products.loadState.refresh is LoadState.Loading) {
+                    items(10) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -66,8 +69,11 @@ fun ProductListScreen(
                                 .shimmerEffect()
                         )
                     }
-                } else {
-                    items(state.products) { product ->
+                }
+
+                items(count = products.itemCount) { index ->
+                    val product = products[index]
+                    if (product != null) {
                         ProductListItem(
                             product = product,
                             onItemClick = {
@@ -76,14 +82,31 @@ fun ProductListScreen(
                         )
                     }
                 }
+
+                if (products.loadState.append is LoadState.Loading) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(modifier = Modifier.size(32.dp))
+                        }
+                    }
+                }
             }
-            // 2. ERROR STATE (Shows centered if list is empty and error exists)
-            if (state.error.isNotBlank() && state.products.isEmpty()) {
+
+            if (products.loadState.refresh is LoadState.Error) {
+                val errorState = products.loadState.refresh as LoadState.Error
+
+                val errorMessage = errorState.error.message ?: "Unknown Error"
+
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 32.dp)
-                        .align(Alignment.Center), // Centers perfectly in the Box
+                        .align(Alignment.Center),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Icon(
@@ -94,7 +117,7 @@ fun ProductListScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = state.error,
+                        text = errorMessage,
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
@@ -102,15 +125,14 @@ fun ProductListScreen(
                     )
                     Spacer(modifier = Modifier.height(32.dp))
                     Button(
-                        onClick = { viewModel.getProducts() },
+                        onClick = { products.retry() },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.onErrorContainer,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
+                            containerColor = MaterialTheme.colorScheme.primary
                         ),
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier.height(50.dp).fillMaxWidth(0.6f)
                     ) {
-                        Text("Try Again", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge)
+                        Text("Try Again", fontWeight = FontWeight.Bold)
                     }
                 }
             }
