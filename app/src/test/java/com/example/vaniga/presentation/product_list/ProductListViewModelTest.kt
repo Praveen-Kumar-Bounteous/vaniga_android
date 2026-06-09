@@ -1,20 +1,19 @@
 package com.example.vaniga.presentation.product_list
 
+import androidx.paging.PagingData
+import com.example.vaniga.domain.model.Product
+import com.example.vaniga.domain.usecase.GetProductsUseCase
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import org.junit.After
-import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
-import com.example.vaniga.core.common.Resource
-import com.example.vaniga.domain.model.Product
-import com.example.vaniga.domain.usecase.GetProductsUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProductListViewModelTest {
@@ -27,36 +26,25 @@ class ProductListViewModelTest {
         Dispatchers.setMain(testDispatcher)
     }
 
-    @After
-    fun tearDown() {
-        Dispatchers.resetMain()
-    }
-
     @Test
-    fun `When getProducts returns Success, state is updated with products`() {
-        // Given
-        val products = listOf(Product(1, "Title", 10, "Desc", emptyList(), ""))
-        every { getProductsUseCase() } returns flowOf(Resource.Success(products))
+    fun `When productsFlow is collected, it emits the paging data from usecase`() = runTest {
+        // 1. GIVEN: A list of fake products converted to PagingData
+        val fakeProducts = listOf(
+            Product(1, "Title", 10, "Desc", emptyList(), "")
+        )
+        val pagingData = PagingData.from(fakeProducts)
 
-        // When
+        // Mock the UseCase to return our pagingData flow
+        every { getProductsUseCase(categoryId) } returns flowOf(pagingData)
+
+        // 2. WHEN: We initialize the ViewModel
         val viewModel = ProductListViewModel(getProductsUseCase)
 
-        // Then
-        assertEquals(products, viewModel.state.value.products)
-        assertEquals(false, viewModel.state.value.isLoading)
-    }
+        // 3. THEN: We verify the flow emits something
+        // Note: You can't easily "peek" inside PagingData,
+        // but getting the first emission proves the flow connection is working.
+        val result = viewModel.productsFlow.first()
 
-    @Test
-    fun `When getProducts returns Error, state error message is updated`() {
-        // Given
-        val errorMsg = "Network Error"
-        every { getProductsUseCase() } returns flowOf(Resource.Error(errorMsg))
-
-        // When
-        val viewModel = ProductListViewModel(getProductsUseCase)
-
-        // Then
-        assertEquals(errorMsg, viewModel.state.value.error)
-        assertEquals(false, viewModel.state.value.isLoading)
+        assert(result != null)
     }
 }

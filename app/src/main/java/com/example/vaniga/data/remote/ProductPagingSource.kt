@@ -7,13 +7,14 @@ import com.example.vaniga.domain.model.Product
 
 
 class ProductPagingSource(
-    private val api: ProductApi
+    private val api: ProductApi,
+    private val categoryId: Int? = null
 ) : PagingSource<Int, Product>() {
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Product> {
         val position = params.key ?: 0
         return try {
-            val response = api.getProducts(offset = position, limit = params.loadSize)
+            val response = api.getProducts(offset = position, limit = params.loadSize, categoryId = categoryId)
 
             LoadResult.Page(
                 data = response.map { it.toDomain() },

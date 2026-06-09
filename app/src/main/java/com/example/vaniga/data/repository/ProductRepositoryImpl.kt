@@ -14,6 +14,7 @@ import java.io.IOException
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import com.example.vaniga.domain.model.Category
 
 class ProductRepositoryImpl @Inject constructor(
     private val api: ProductApi
@@ -31,15 +32,25 @@ class ProductRepositoryImpl @Inject constructor(
 //        }
 //    }
 
-    override fun getProductsPaging(): Flow<PagingData<Product>> {
+    override fun getProductsPaging(categoryId: Int?): Flow<PagingData<Product>> {
         return Pager(
             config = PagingConfig(
                 pageSize = 10,
                 prefetchDistance = 2,
                 enablePlaceholders = false
             ),
-            pagingSourceFactory = { ProductPagingSource(api) }
+            pagingSourceFactory = { ProductPagingSource(api, categoryId) }
         ).flow
+    }
+
+    override fun getCategories(): Flow<Resource<List<Category>>> = flow {
+        emit(Resource.Loading())
+        try {
+            val categories = api.getCategories().map { Category(it.id, it.name) }
+            emit(Resource.Success(categories))
+        } catch (e: Exception) {
+            emit(Resource.Error("Couldn't load categories"))
+        }
     }
 
     override fun getProductById(id: Int): Flow<Resource<Product>> = flow {
