@@ -1,5 +1,8 @@
 package com.example.vaniga.presentation.product_list
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -23,11 +26,13 @@ import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.vaniga.presentation.Screen
 import com.example.vaniga.presentation.components.shimmerEffect
+import com.example.vaniga.presentation.product_list.ProductListItem
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
-fun ProductListScreen(
+fun SharedTransitionScope.ProductListScreen(
     navController: NavController,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     viewModel: ProductListViewModel = hiltViewModel()
 ) {
     // 1. Collect Paging Data and Category States
@@ -116,6 +121,7 @@ fun ProductListScreen(
                         if (product != null) {
                             ProductListItem(
                                 product = product,
+                                animatedVisibilityScope = animatedVisibilityScope,
                                 onItemClick = {
                                     navController.navigate(Screen.ProductDetailScreen.route + "/${product.id}")
                                 }

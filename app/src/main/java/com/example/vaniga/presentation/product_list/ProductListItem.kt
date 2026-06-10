@@ -1,5 +1,8 @@
 package com.example.vaniga.presentation.product_list
 
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,9 +19,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.vaniga.domain.model.Product
+import javax.inject.Scope
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-fun ProductListItem(product: Product, onItemClick: (Product) -> Unit) {
+fun SharedTransitionScope.ProductListItem(
+    product: Product,
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    onItemClick: (Product) -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -67,3 +76,4 @@ fun ProductListItem(product: Product, onItemClick: (Product) -> Unit) {
         }
     }
 }
+

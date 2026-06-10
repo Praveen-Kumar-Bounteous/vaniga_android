@@ -1,5 +1,9 @@
 package com.example.vaniga.presentation.product_detail
 
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.AnimatedVisibilityScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.pager.HorizontalPager
@@ -25,10 +29,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
-fun ProductDetailScreen(
+fun SharedTransitionScope.ProductDetailScreen(
     navController: NavController,
+    animatedVisibilityScope: AnimatedVisibilityScope,
     viewModel: ProductDetailViewModel = hiltViewModel()
 ) {
     val state = viewModel.state.value
@@ -93,7 +98,6 @@ fun ProductDetailScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             repeat(product.images.size) { iteration ->
-                                // Use Primary for active dot, OutlineVariant for inactive
                                 val color = if (pagerState.currentPage == iteration)
                                     MaterialTheme.colorScheme.primary
                                 else

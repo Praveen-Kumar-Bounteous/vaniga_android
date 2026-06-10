@@ -2,6 +2,7 @@ package com.example.vaniga.presentation.product_list
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
@@ -17,11 +18,10 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
-
 @HiltViewModel
 class ProductListViewModel @Inject constructor(
     private val repository: ProductRepository,
-    private val getCategoriesUseCase: GetCategoriesUseCase // Make sure this is injected
+    private val getCategoriesUseCase: GetCategoriesUseCase,
 ) : ViewModel() {
 
     private val _selectedCategory = MutableStateFlow<Int?>(null)
@@ -59,27 +59,3 @@ class ProductListViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 }
-
-
-//    private val _state = mutableStateOf(ProductListState())
-//    val state: State<ProductListState> = _state
-//
-//    init {
-//        getProducts()
-//    }
-
-//    fun getProducts() {
-//        getProductsUseCase().onEach { result ->
-//            when (result) {
-//                is Resource.Success -> {
-//                    _state.value = ProductListState(products = result.data ?: emptyList())
-//                }
-//                is Resource.Error -> {
-//                    _state.value = ProductListState(error = result.message ?: "An unexpected error occurred")
-//                }
-//                is Resource.Loading -> {
-//                    _state.value = ProductListState(isLoading = true)
-//                }
-//            }
-//        }.launchIn(viewModelScope)
-//    }

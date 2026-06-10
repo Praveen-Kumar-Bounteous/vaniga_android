@@ -1,6 +1,8 @@
 package com.example.vaniga.data.mapper
 
+import com.example.vaniga.data.remote.dto.CategoryDto
 import com.example.vaniga.data.remote.dto.ProductDto
+import com.example.vaniga.domain.model.Category
 import com.example.vaniga.domain.model.Product
 
 fun ProductDto.toDomain(): Product {
@@ -13,6 +15,7 @@ fun ProductDto.toDomain(): Product {
         thumbnail = cleanImageUrl(images.firstOrNull() ?: "")
     )
 }
+
 
 fun cleanImageUrl(url: String): String {
     return url.replace("[", "").replace("]", "").replace("\"", "")
